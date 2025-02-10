@@ -1,0 +1,796 @@
+{% extends "base.html" %}
+
+{% block title %}Проект: {{ project.name }}{% endblock %}
+
+{% block head %}
+<style>
+  /* Основные стили */
+  .project-header {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+  }
+
+  .back-btn {
+    color: var(--text-color);
+    background: var(--secondary-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .back-btn:hover {
+    background: #e9ecef;
+    text-decoration: none;
+    color: var(--text-color);
+  }
+
+  .add-task-btn {
+    background: var(--primary-color);
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .add-task-btn:hover {
+    background: var(--hover-color);
+    transform: translateY(-1px);
+  }
+
+  /* Стили канбан-доски */
+  .kanban-column {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.25rem;
+    min-height: 500px;
+  }
+
+  .column-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
+  }
+
+  .column-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+  }
+
+  .column-counter {
+    background: rgba(0,0,0,0.1);
+    color: #495057;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  /* Стили карточки задачи */
+  .task-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: move;
+  }
+
+  .task-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .task-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding-right: 2rem;
+  }
+
+  .task-title {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #fff5f5;
+    color: #e03131;
+    border: none;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .delete-btn:hover {
+    background: #ffe3e3;
+  }
+
+  .task-content {
+    margin-bottom: 0.75rem;
+  }
+
+  .task-description {
+    color: #6c757d;
+    font-size: 0.925rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .task-assignee {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .assignee-avatar {
+    width: 28px;
+    height: 28px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .assignee-name {
+    color: #6c757d;
+    font-size: 0.875rem;
+  }
+
+  .task-actions {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.5rem;
+  }
+
+  /* Стили кнопок */
+  .status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .status-btn i {
+    font-size: 0.875rem;
+  }
+
+  .status-btn.plans {
+    background: #e3fcef;
+    color: #0ca678;
+  }
+
+  .status-btn.plans:hover {
+    background: #c3fae8;
+  }
+
+  .status-btn.in-progress {
+    background: #e7f5ff;
+    color: #1c7ed6;
+  }
+
+  .status-btn.in-progress:hover {
+    background: #d0ebff;
+  }
+
+  .status-btn.testing {
+    background: #fff3bf;
+    color: #f08c00;
+  }
+
+  .status-btn.testing:hover {
+    background: #ffec99;
+  }
+
+  .delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #fff5f5;
+    color: #e03131;
+    border: none;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+
+  .delete-btn:hover {
+    background: #ffe3e3;
+  }
+
+  /* Стили модального окна */
+  .modal-content {
+    border-radius: 12px;
+    border: none;
+  }
+
+  .modal-header {
+    background: var(--secondary-color);
+    border-radius: 12px 12px 0 0;
+    padding: 1.25rem;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .modal-title {
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+  }
+
+  .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
+
+  /* Стили комментариев */
+  .comments-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .comment-item {
+    background: var(--secondary-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .comment-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .comment-author {
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .comment-text {
+    color: #6c757d;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .user-avatar-small {
+    width: 24px;
+    height: 24px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  /* Стили плейсхолдера при перетаскивании */
+  .task-card-placeholder {
+    background: rgba(74, 144, 226, 0.1);
+    border: 2px dashed var(--primary-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .project-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .add-task-btn {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .task-footer {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    
+    .task-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-header d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center">
+        <a href="{{ url_for('project_list') }}" class="back-btn mr-3">
+            <i class="fas fa-arrow-left"></i>
+            К проектам
+        </a>
+        <h2 class="mb-0">{{ project.name }}</h2>
+    </div>
+    <button type="button" class="add-task-btn" data-toggle="modal" data-target="#addTaskModal">
+        <i class="fas fa-plus"></i>
+        Добавить задачу
+    </button>
+</div>
+
+<div class="row">
+    {% for status in statuses %}
+    <div class="col-md-3">
+        <div class="kanban-column">
+            <div class="column-header">
+                {% if status == "Планы" %}
+                    <i class="fas fa-clipboard-list text-success"></i>
+                {% elif status == "В работе" %}
+                    <i class="fas fa-clock text-primary"></i>
+                {% elif status == "Тестирование" %}
+                    <i class="fas fa-vial text-warning"></i>
+                {% else %}
+                    <i class="fas fa-check-circle text-secondary"></i>
+                {% endif %}
+                <h3 class="column-title">{{ status }}</h3>
+                <span class="column-counter">{{ tasks_by_status[status]|length }}</span>
+            </div>
+            <ul class="list-unstyled sortable-column" data-status="{{ status }}">
+                {% for task in tasks_by_status[status] %}
+                <li class="task-card" data-task-id="{{ task.id }}"
+                    data-task-title="{{ task.title }}"
+                    data-task-description="{{ task.description }}"
+                    data-task-assigned="{{ task.assigned_to }}">
+                    <button type="button" class="delete-btn" 
+                            onclick="if(confirm('Вы уверены, что хотите удалить эту задачу?')) 
+                                    window.location.href='{{ url_for('delete_task', project_id=project.id, task_id=task.id) }}'">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <div class="task-content">
+                        <div class="task-header">
+                            <h4 class="task-title">{{ task.title }}</h4>
+                        </div>
+                        <div class="task-description">
+                            {% if task.description|length > 100 %}
+                                {{ task.description[:100] }}...
+                                <a href="#" class="view-full-task text-primary">Читать далее</a>
+                            {% else %}
+                                {{ task.description }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="task-assignee">
+                        <div class="assignee-avatar">
+                            {{ task.assigned_to[0]|upper }}
+                        </div>
+                        <span class="assignee-name">{{ task.assigned_to }}</span>
+                    </div>
+                    <div class="task-actions">
+                        {% if status != "Завершено" %}
+                            {% if status == "Планы" %}
+                                <button type="button" class="status-btn plans"
+                                        onclick="window.location.href='{{ url_for('update_task_status', project_id=project.id, task_id=task.id, new_status='В работе') }}'">
+                                    <i class="fas fa-play"></i>
+                                    Начать
+                                </button>
+                            {% elif status == "В работе" %}
+                                <button type="button" class="status-btn in-progress"
+                                        onclick="window.location.href='{{ url_for('update_task_status', project_id=project.id, task_id=task.id, new_status='Тестирование') }}'">
+                                    <i class="fas fa-vial"></i>
+                                    Тестировать
+                                </button>
+                            {% elif status == "Тестирование" %}
+                                <button type="button" class="status-btn testing"
+                                        onclick="window.location.href='{{ url_for('update_task_status', project_id=project.id, task_id=task.id, new_status='Завершено') }}'">
+                                    <i class="fas fa-check"></i>
+                                    Завершить
+                                </button>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Модальное окно добавления задачи -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Новая задача
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_task', project_id=project.id) }}">
+                    <div class="form-group">
+                        <label for="title">
+                            <i class="fas fa-heading"></i>
+                            Название задачи
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">
+                            <i class="fas fa-align-left"></i>
+                            Описание задачи
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="assigned_to">
+                            <i class="fas fa-user"></i>
+                            Исполнитель
+                        </label>
+                        <select class="form-control" id="assigned_to" name="assigned_to">
+                            {% for user in users %}
+                                <option value="{{ user.username }}" {% if user.username == session['username'] %}selected{% endif %}>
+                                    {{ user.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="text-right">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            <i class="fas fa-times"></i>
+                            Отмена
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i>
+                            Создать задачу
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно просмотра задачи -->
+<div class="modal fade" id="taskModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-tasks"></i>
+                    <span id="modalTaskTitle"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="task-info mb-4">
+                    <div class="description-section mb-3">
+                        <h6 class="section-title">
+                            <i class="fas fa-align-left"></i>
+                            Описание
+                        </h6>
+                        <p id="modalTaskDescription" class="task-description-text"></p>
+                    </div>
+                    <div class="meta-section">
+                        <div class="assignee-info">
+                            <h6 class="section-title mb-2">
+                                <i class="fas fa-user-circle"></i>
+                                Исполнитель
+                            </h6>
+                            <div class="assigned-user">
+                                <div class="assignee-avatar">
+                                    <span id="modalTaskAssignedInitial"></span>
+                                </div>
+                                <span id="modalTaskAssigned"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comments-section">
+                    <h6 class="section-title mb-3">
+                        <i class="fas fa-comments"></i>
+                        Комментарии
+                    </h6>
+                    <ul id="commentsList" class="comments-list list-unstyled">
+                        <!-- Комментарии будут добавляться здесь -->
+                    </ul>
+                    
+                    <form id="commentForm" class="mt-4">
+                        <div class="current-user mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="user-avatar-small">
+                                    <span>{{ session['username'][0]|upper }}</span>
+                                </div>
+                                <small class="text-muted">Комментировать как {{ session['username'] }}</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-control" id="commentText" rows="3" 
+                                      placeholder="Напишите комментарий..."></textarea>
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                Отправить
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between w-100">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown">
+                            <i class="fas fa-exchange-alt"></i>
+                            Изменить статус
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" id="modalStatusToInWork">
+                                <i class="fas fa-play"></i>
+                                В работу
+                            </a>
+                            <a class="dropdown-item" href="#" id="modalStatusToTesting">
+                                <i class="fas fa-vial"></i>
+                                На тестирование
+                            </a>
+                            <a class="dropdown-item" href="#" id="modalCompleteTask">
+                                <i class="fas fa-check-circle"></i>
+                                Завершить
+                            </a>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function(){
+    var currentProjectId = "{{ project.id }}";
+    var currentTaskId = null;
+
+    // Инициализация sortable для канбан-доски
+    $(".sortable-column").sortable({
+        connectWith: ".sortable-column",
+        placeholder: "task-card-placeholder",
+        start: function(event, ui) {
+            ui.placeholder.height(ui.item.height());
+        },
+        receive: function(event, ui) {
+            var taskId = ui.item.data("task-id");
+            var newStatus = $(this).data("status");
+            updateTaskStatus(taskId, newStatus);
+        }
+    }).disableSelection();
+
+    // Функция обновления статуса задачи
+    function updateTaskStatus(taskId, newStatus) {
+        var updateUrl = "{{ url_for('update_task_status', project_id=project.id, task_id='__TASK_ID__', new_status='__NEW_STATUS__') }}"
+            .replace("__TASK_ID__", taskId)
+            .replace("__NEW_STATUS__", newStatus);
+
+        $.ajax({
+            url: updateUrl,
+            method: "GET",
+            success: function(response) {
+                showNotification('Статус задачи обновлён', 'success');
+                updateTaskCard(taskId, newStatus);
+            },
+            error: function() {
+                showNotification('Ошибка при обновлении статуса', 'error');
+                $(".sortable-column").sortable('cancel');
+            }
+        });
+    }
+
+    // Функция показа уведомлений
+    function showNotification(message, type) {
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+        const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+        
+        const alert = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                <i class="fas fa-${icon}"></i> ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        `).prependTo('.container');
+
+        setTimeout(() => alert.alert('close'), 3000);
+    }
+
+    // Обработчик клика по карточке задачи
+    $(".task-card").on("click", function(e) {
+        if ($(e.target).closest(".task-actions, .view-full-task").length) {
+            return;
+        }
+        
+        const $card = $(this);
+        currentTaskId = $card.data("task-id");
+        
+        $("#modalTaskTitle").text($card.data("task-title"));
+        $("#modalTaskDescription").text($card.data("task-description"));
+        $("#modalTaskAssigned").text($card.data("task-assigned"));
+        $("#modalTaskAssignedInitial").text($card.data("task-assigned")[0].toUpperCase());
+
+        loadComments(currentTaskId);
+        $("#taskModal").modal("show");
+    });
+
+    // Функция загрузки комментариев
+    function loadComments(taskId) {
+        $("#commentsList").empty();
+        $.ajax({
+            url: `/project/${currentProjectId}/task/${taskId}/comments`,
+            method: "GET",
+            success: function(response) {
+                if(response.comments?.length) {
+                    response.comments.forEach(addCommentToList);
+                }
+            },
+            error: function() {
+                showNotification('Ошибка при загрузке комментариев', 'error');
+            }
+        });
+    }
+
+    // Функция добавления комментария в список
+    function addCommentToList(comment) {
+        const commentHtml = `
+            <li class="comment-item">
+                <div class="comment-header d-flex align-items-center gap-2 mb-2">
+                    <div class="user-avatar-small">
+                        <span>${comment.author[0].toUpperCase()}</span>
+                    </div>
+                    <strong class="comment-author">${comment.author}</strong>
+                    <small class="text-muted">${formatDate(comment.created_at)}</small>
+                </div>
+                <div class="comment-text">${comment.text}</div>
+            </li>
+        `;
+        $("#commentsList").append(commentHtml);
+    }
+
+    // Форматирование даты
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Обработчик отправки комментария
+    $("#commentForm").on("submit", function(e) {
+        e.preventDefault();
+        const commentText = $("#commentText").val().trim();
+        
+        if(!commentText) {
+            showNotification('Комментарий не может быть пустым', 'error');
+            return;
+        }
+
+        $.ajax({
+            url: `/project/${currentProjectId}/task/${currentTaskId}/comments`,
+            method: "POST",
+            data: { comment: commentText },
+            success: function(response) {
+                if(response.success) {
+                    addCommentToList(response.comment);
+                    $("#commentText").val('');
+                    showNotification('Комментарий добавлен', 'success');
+                } else {
+                    showNotification(response.error, 'error');
+                }
+            },
+            error: function() {
+                showNotification('Ошибка при добавлении комментария', 'error');
+            }
+        });
+    });
+
+    // Обработчики изменения статуса из модального окна
+    $("#modalStatusToInWork, #modalStatusToTesting, #modalCompleteTask").on("click", function(e) {
+        e.preventDefault();
+        const statusMap = {
+            'modalStatusToInWork': 'В работе',
+            'modalStatusToTesting': 'Тестирование',
+            'modalCompleteTask': 'Завершено'
+        };
+        
+        const newStatus = statusMap[this.id];
+        if (newStatus && currentTaskId) {
+            updateTaskStatus(currentTaskId, newStatus);
+            $("#taskModal").modal("hide");
+        }
+    });
+
+    // Просмотр полного описания задачи
+    $(".view-full-task").on("click", function(e) {
+        e.preventDefault();
+        const $card = $(this).closest(".task-card");
+        $("#modalTaskTitle").text($card.data("task-title"));
+        $("#modalTaskDescription").text($card.data("task-description"));
+        $("#taskModal").modal("show");
+    });
+});
+</script>
+{% endblock %}

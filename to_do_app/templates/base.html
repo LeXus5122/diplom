@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Project Manager{% endblock %}</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4a90e2;
+      --secondary-color: #f8f9fa;
+      --text-color: #2c3e50;
+      --hover-color: #357abd;
+      --nav-height: 70px;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      background-color: #f4f4f9;
+      color: var(--text-color);
+    }
+
+    .navbar {
+      height: var(--nav-height);
+      background-color: #ffffff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 0 1.5rem;
+    }
+
+    .navbar-brand {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-color) !important;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .navbar-brand i {
+      margin-right: 8px;
+      font-size: 1.8rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      margin-left: 1rem;
+    }
+
+    .nav-link {
+      color: var(--text-color) !important;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: var(--secondary-color);
+      color: var(--primary-color) !important;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      background-color: var(--secondary-color);
+      border-radius: 25px;
+      margin-right: 1rem;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-weight: 500;
+    }
+
+    .user-name {
+      color: var(--text-color);
+      font-weight: 500;
+      margin-right: 10px;
+    }
+
+    .admin-link {
+      color: var(--primary-color) !important;
+      background-color: rgba(74, 144, 226, 0.1);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      margin-right: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .admin-link i {
+      margin-right: 6px;
+    }
+
+    .admin-link:hover {
+      background-color: rgba(74, 144, 226, 0.2);
+    }
+
+    .logout-btn {
+      color: #e74c3c !important;
+      display: flex;
+      align-items: center;
+      font-weight: 500;
+    }
+
+    .logout-btn i {
+      margin-right: 6px;
+    }
+
+    .logout-btn:hover {
+      color: #c0392b !important;
+      background-color: rgba(231, 76, 60, 0.1);
+    }
+
+    @media (max-width: 991.98px) {
+      .navbar {
+        padding: 0.5rem 1rem;
+      }
+
+      .user-profile {
+        margin: 0.5rem 0;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .admin-link {
+        margin: 0.5rem 0;
+        justify-content: center;
+      }
+
+      .nav-item {
+        margin: 0.5rem 0;
+      }
+
+      .navbar-collapse {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Остальные стили остаются без изменений */
+    .container {
+      margin-top: 20px;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .sortable-column {
+      min-height: 250px;
+      background-color: #ffffff;
+      border: 1px solid #dee2e6;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .sortable-column li {
+      cursor: move;
+      margin-bottom: 15px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
+    .sortable-column li:hover {
+      background-color: #e9ecef;
+    }
+    .ui-state-highlight {
+      height: 2.5em;
+      line-height: 1.2em;
+      background-color: #ffeeba;
+      border: 1px dashed #ffc107;
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <a class="navbar-brand" href="{{ url_for('project_list') }}">
+      <i class="fas fa-tasks"></i>
+      ToDo GeekBrains
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" 
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars" style="color: var(--primary-color)"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto">
+        {% if session.get('logged_in') %}
+          <li class="nav-item">
+            <div class="user-profile">
+              <div class="user-avatar">
+                {{ session['username'][0]|upper }}
+              </div>
+              <span class="user-name">{{ session['username'] }}</span>
+            </div>
+          </li>
+          {% if session.get('username') == 'admin' %}
+            <li class="nav-item">
+              <a class="admin-link" href="{{ url_for('manage_users') }}">
+                <i class="fas fa-users-cog"></i>
+                Управление пользователями
+              </a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            <a class="nav-link logout-btn" href="{{ url_for('logout') }}">
+              <i class="fas fa-sign-out-alt"></i>
+              Выход
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

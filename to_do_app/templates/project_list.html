@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}Список проектов{% endblock %}
+
+{% block head %}
+<style>
+  .projects-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #eef2f7;
+  }
+
+  .page-title {
+    color: var(--text-color);
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .project-count {
+    margin-left: 1rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .create-project-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #eef2f7;
+  }
+
+  .create-project-card h3 {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+
+  .project-input {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+  }
+
+  .project-input input {
+    flex-grow: 1;
+    border: 2px solid #eef2f7;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .project-input input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    outline: none;
+  }
+
+  .create-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .create-btn:hover {
+    background-color: var(--hover-color);
+    transform: translateY(-1px);
+  }
+
+  .project-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .project-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #eef2f7;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .project-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-grow: 1;
+  }
+
+  .project-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(74, 144, 226, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+  }
+
+  .project-name {
+    color: var(--text-color);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+  }
+
+  .project-name:hover {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .project-actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .edit-btn, .delete-btn {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .edit-btn {
+    background-color: rgba(74, 144, 226, 0.1);
+    color: var(--primary-color);
+  }
+
+  .edit-btn:hover {
+    background-color: rgba(74, 144, 226, 0.2);
+  }
+
+  .delete-btn {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+  }
+
+  .delete-btn:hover {
+    background-color: rgba(231, 76, 60, 0.2);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #eef2f7;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    color: #a0aec0;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    color: #718096;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .project-input {
+      flex-direction: column;
+    }
+
+    .create-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .project-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .project-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="projects-container">
+  <div class="page-header">
+    <h1 class="page-title">Проекты</h1>
+    {% if projects %}
+      <span class="project-count">{{ projects|length }}</span>
+    {% endif %}
+  </div>
+
+  <div class="create-project-card">
+    <h3>Создать новый проект</h3>
+    <form method="POST" action="{{ url_for('add_project') }}" class="project-input">
+      <input 
+        type="text" 
+        id="name" 
+        name="name" 
+        placeholder="Введите название проекта" 
+        required 
+        autocomplete="off"
+      >
+      <button type="submit" class="create-btn">
+        <i class="fas fa-plus"></i>
+        Создать
+      </button>
+    </form>
+  </div>
+
+  {% if projects %}
+    <div class="project-list">
+      {% for project in projects %}
+        <div class="project-card">
+          <div class="project-info">
+            <div class="project-icon">
+              <i class="fas fa-project-diagram"></i>
+            </div>
+            <a href="{{ url_for('project_board', project_id=project.id) }}" class="project-name">
+              {{ project.name }}
+            </a>
+          </div>
+          <div class="project-actions">
+            <a href="{{ url_for('project_board', project_id=project.id) }}" 
+               class="edit-btn" 
+               title="Редактировать проект">
+              <i class="fas fa-pencil-alt"></i>
+            </a>
+            <a href="{{ url_for('delete_project', project_id=project.id) }}" 
+               class="delete-btn" 
+               title="Удалить проект"
+               onclick="return confirm('Вы уверены, что хотите удалить этот проект?')">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-folder-open"></i>
+      <p>У вас пока нет проектов</p>
+      <button class="create-btn" onclick="document.getElementById('name').focus()">
+        <i class="fas fa-plus"></i>
+        Создать первый проект
+      </button>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

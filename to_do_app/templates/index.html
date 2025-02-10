@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Список задач{% endblock %}
+
+{% block head %}
+<style>
+  .task-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+  }
+
+  .task-input {
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  .task-input input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .task-input input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    outline: none;
+  }
+
+  .task-input i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9e9e9e;
+    transition: color 0.3s ease;
+  }
+
+  .task-input input:focus + i {
+    color: var(--primary-color);
+  }
+
+  .add-task-btn {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .add-task-btn:hover {
+    background: var(--hover-color);
+    transform: translateY(-1px);
+  }
+
+  .task-list {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .task-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  .task-item:last-child {
+    border-bottom: none;
+  }
+
+  .task-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  .task-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+
+  .task-checkbox i {
+    color: white;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .task-item.done .task-checkbox {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+  }
+
+  .task-item.done .task-checkbox i {
+    opacity: 1;
+  }
+
+  .task-content {
+    flex-grow: 1;
+    font-size: 1rem;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+  }
+
+  .task-item.done .task-content {
+    color: #9e9e9e;
+    text-decoration: line-through;
+  }
+
+  .task-actions {
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .task-item:hover .task-actions {
+    opacity: 1;
+  }
+
+  .task-btn {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    color: #9e9e9e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .task-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .task-btn.delete-btn:hover {
+    color: #e74c3c;
+    background-color: rgba(231, 76, 60, 0.1);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #9e9e9e;
+  }
+
+  .empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #e0e0e0;
+  }
+
+  @keyframes taskComplete {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateX(20px);
+      opacity: 0.5;
+    }
+    100% {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+  }
+
+  .task-complete-animation {
+    animation: taskComplete 0.5s ease-in-out;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <form method="POST" action="{{ url_for('add_task') }}" class="task-form">
+        <div class="task-input">
+          <input type="text" id="description" name="description" 
+                 placeholder="Что нужно сделать?" required autocomplete="off">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <button type="submit" class="add-task-btn">
+          <i class="fas fa-plus"></i>
+          Добавить задачу
+        </button>
+      </form>
+
+      {% if tasks %}
+        <div class="task-list">
+          {% for task in tasks %}
+            <div class="task-item {% if task.done %}done{% endif %}" id="task-{{ task.id }}">
+              <div class="task-checkbox" data-task-id="{{ task.id }}">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="task-content">{{ task.description }}</div>
+              <div class="task-actions">
+                {% if not task.done %}
+                  <button class="task-btn mark-done" data-href="{{ url_for('mark_done', task_id=task.id) }}">
+                    <i class="fas fa-check"></i>
+                  </button>
+                {% endif %}
+                <button class="task-btn delete-btn" data-href="{{ url_for('delete_task', task_id=task.id) }}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>Список задач пуст. Добавьте новую задачу!</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Отмечаем задачу как выполненную
+    $('.mark-done, .task-checkbox').on('click', function(e) {
+        e.preventDefault();
+        const $item = $(this).closest('.task-item');
+        const href = $(this).data('href') || $(this).find('.mark-done').data('href');
+        
+        if (href) {
+            $item.addClass('task-complete-animation');
+            setTimeout(() => {
+                window.location.href = href;
+            }, 500);
+        }
+    });
+
+    // Удаление задачи
+    $('.delete-btn').on('click', function(e) {
+        e.preventDefault();
+        const $item = $(this).closest('.task-item');
+        const href = $(this).data('href');
+
+        if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+            $item.addClass('task-complete-animation');
+            setTimeout(() => {
+                window.location.href = href;
+            }, 500);
+        }
+    });
+
+    // Анимация при добавлении новой задачи
+    $('.task-form').on('submit', function() {
+        $('.add-task-btn').prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin"></i> Добавление...');
+    });
+
+    // Улучшенный UX для input
+    const $taskInput = $('#description');
+    
+    $taskInput.on('focus', function() {
+        $(this).closest('.task-form').addClass('focused');
+    }).on('blur', function() {
+        $(this).closest('.task-form').removeClass('focused');
+    });
+
+    // Автофокус на поле ввода при загрузке страницы
+    $taskInput.focus();
+});
+</script>
+{% endblock %}

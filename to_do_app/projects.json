@@ -1,0 +1,41 @@
+[
+    {
+        "id": "0bf8dc15-6e52-47de-84ff-dd9aca4d41e7",
+        "name": "GeekBrains",
+        "tasks": [
+            {
+                "id": "ccbaecdc-57f5-438a-89ea-0c501e64f969",
+                "title": "1",
+                "description": "первая",
+                "status": "Завершено",
+                "assigned_to": "admin",
+                "comments": [
+                    {
+                        "author": "admin",
+                        "text": "test"
+                    },
+                    {
+                        "author": "user1",
+                        "text": "test coomment"
+                    }
+                ]
+            },
+            {
+                "id": "f557cf63-ed24-4757-a0fa-c5e0d8843073",
+                "title": "задача два ",
+                "description": "описание второй задачи",
+                "status": "В работе",
+                "assigned_to": "admin",
+                "comments": []
+            },
+            {
+                "id": "a763f67d-51c6-4ee1-bfed-02e5aba0bed2",
+                "title": "задача три ",
+                "description": "описание третьей задачи",
+                "status": "Планы",
+                "assigned_to": "user1",
+                "comments": []
+            }
+        ]
+    }
+]
